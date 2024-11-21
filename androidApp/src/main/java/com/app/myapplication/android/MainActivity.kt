@@ -20,7 +20,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
@@ -32,6 +35,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -365,30 +369,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun MyTextFieldUI() {
-        var text by remember { mutableStateOf("") }
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            OutlinedTextField(value = text,
-                onValueChange = { text = it },
-                label = { Text("Enter your name") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(10.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            MyButton(text)
-        }
-
-    }
-
     @OptIn(ExperimentalPagerApi::class)
     @Composable
     fun MyViewPager() {
@@ -432,9 +412,11 @@ class MainActivity : ComponentActivity() {
             // Horizontal Pager
             HorizontalPager(
                 count = pages.size, // Number of pages
-                state = pagerState, modifier = Modifier.weight(1f) // Pager takes up available space
+                state = pagerState,
+                modifier = Modifier.height(300.dp) // Pager takes up available space
             ) { page ->
                 Column {
+                    Spacer(modifier = Modifier.height(5.dp))
                     MenuOne()
                     Spacer(modifier = Modifier.height(5.dp))
                     MenuTwo()
@@ -455,6 +437,8 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MenuOne() {
+        val scaffoldState = rememberScaffoldState()
+        val coroutineScope = rememberCoroutineScope()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -462,6 +446,7 @@ class MainActivity : ComponentActivity() {
                 .border(1.5.dp, Color.Gray, shape = RoundedCornerShape(8.dp)),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Left side (image and description)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(all = 10.dp)
@@ -494,28 +479,158 @@ class MainActivity : ComponentActivity() {
                         style = MaterialTheme.typography.titleSmall
                     )
                 }
-
-
             }
-            Row(modifier = Modifier.padding(all = 10.dp)) {
 
-                Text(
-                    text = "GBP",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(
-                    text = "50",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.titleMedium,
-                )
+            // Right side (price and button)
+            Column(
+                modifier = Modifier.padding(all = 10.dp),
+                horizontalAlignment = Alignment.End // Align text and button to the end
+            ) {
+                // Price in a row
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "GBP",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = "50",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+
+                // Spacer between price and button
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Add to Cart Button
+                val context = LocalContext.current
+                Box(contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .padding(1.dp)
+                        .background(Color.Red, shape = RoundedCornerShape(8.dp))
+                        .clickable {
+                            coroutineScope.launch {
+                                scaffoldState.snackbarHostState.showSnackbar("Saved")
+                            }
+                        }
+                        .padding(vertical = 8.dp, horizontal = 16.dp) // Adjust padding for the text
+                ) {
+                    Text(
+                        text = "Add To Cart",
+                        fontSize = 8.sp,
+                        fontStyle = FontStyle.Normal,
+                        fontFamily = FontFamily.Serif,
+                        color = Color.White // White text on red background
+                    )
+                }
             }
         }
     }
 
     @Composable
     fun MenuTwo() {
+        val scaffoldState = rememberScaffoldState()
+        val coroutineScope = rememberCoroutineScope()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .border(1.5.dp, Color.Gray, shape = RoundedCornerShape(8.dp)),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Left side (image and description)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(all = 10.dp)
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.pizza),
+                    contentDescription = "Contact profile picture",
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RectangleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(
+                        text = "Pepperoni Pizza",
+                        color = Color.DarkGray,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(
+                        text = "Pizza with pepperoni",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Spacer(modifier = Modifier.height(5.dp))
+                    Text(
+                        text = "View Details",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+            }
+
+            // Right side (price and button)
+            Column(
+                modifier = Modifier.padding(all = 10.dp),
+                horizontalAlignment = Alignment.End // Align text and button to the end
+            ) {
+                // Price in a row
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "GBP",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = "80",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                }
+
+                // Spacer between price and button
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Add to Cart Button
+                val context = LocalContext.current
+                Box(contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .padding(1.dp)
+                        .background(Color.Red, shape = RoundedCornerShape(8.dp))
+                        .clickable {
+                            coroutineScope.launch {
+                                scaffoldState.snackbarHostState.showSnackbar("Saved")
+                            }
+                        }
+                        .padding(vertical = 8.dp, horizontal = 16.dp) // Adjust padding for the text
+                ) {
+                    Text(
+                        text = "Add To Cart",
+                        fontSize = 8.sp,
+                        fontStyle = FontStyle.Normal,
+                        fontFamily = FontFamily.Serif,
+                        color = Color.White // White text on red background
+                    )
+                }
+            }
+        }
+    }
+
+    /*@Composable
+    fun MenuTwo() {
+        val scaffoldState = rememberScaffoldState()
+        val coroutineScope = rememberCoroutineScope()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -558,94 +673,106 @@ class MainActivity : ComponentActivity() {
 
 
             }
-            Row(modifier = Modifier.padding(all = 10.dp)) {
-                Text(
-                    text = "GBP",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                Text(
-                    text = "80",
-                    color = Color.Red,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-        }
-    }
 
-
-    @Composable
-    fun MyButton(text: String) {
-
-        val context = LocalContext.current
-        Button(
-            onClick = {
-                Toast.makeText(context, "$text", Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            enabled = true,
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White
-            )
-        ) {
-            Text(
-                text = "Save",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                fontStyle = FontStyle.Normal,
-                fontFamily = FontFamily.Serif
-            )
-        }
-
-    }
-
-    @Composable
-    fun BottomNavigationBar() {
-        val navController = rememberNavController() // Navigation Controller
-
-        Scaffold(
-            bottomBar = {
-                BottomNavigation(
-                    backgroundColor = Color.White,
-                    contentColor = Color.Black
-                ) {
-                    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                    val items = listOf(
-                        BottomNavItem.Home,
-                        BottomNavItem.Restaurant,
-                        BottomNavItem.Wines,
-                        BottomNavItem.Orders,
-                        BottomNavItem.Profile
+            Column(
+                modifier = Modifier.padding(all = 10.dp),
+                horizontalAlignment = Alignment.End // Align text and button to the end
+            ) {
+                Row(modifier = Modifier.padding(all = 10.dp)) {
+                    Text(
+                        text = "GBP",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "80",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.titleMedium,
                     )
 
-                    items.forEach { item ->
-                        BottomNavigationItem(
-                            icon = { Icon(item.icon, contentDescription = item.title) },
-                            label = { Text(text = item.title, fontSize = 9.sp) },
-                            selected = currentRoute == item.route,
-                            onClick = {
-                                if (currentRoute != item.route) {
-                                    navController.navigate(item.route) {
-                                        popUpTo(navController.graph.startDestinationId) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                    // Spacer between price and button
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Add to Cart Button
+                    val context = LocalContext.current
+                    Box(contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .padding(1.dp)
+                            .background(Color.Red, shape = RoundedCornerShape(8.dp))
+                            .clickable {
+                                coroutineScope.launch {
+                                    scaffoldState.snackbarHostState.showSnackbar("Saved")
                                 }
-                            },
-                            selectedContentColor = Color(0xFF009933), // Green color for selected
-                            unselectedContentColor = Color.Gray
+                            }
+                            .padding(
+                                vertical = 8.dp, horizontal = 16.dp
+                            ) // Adjust padding for the text
+                    ) {
+                        Text(
+                            text = "Add To Cart",
+                            fontSize = 8.sp,
+                            fontStyle = FontStyle.Normal,
+                            fontFamily = FontFamily.Serif,
+                            color = Color.White // White text on red background
                         )
                     }
                 }
             }
-        ) { innerPadding ->
-            NavigationGraph(navController = navController, modifier = Modifier.padding(innerPadding))
+        }
+    }*/
+
+    @Composable
+    fun BottomNavigationBar() {
+        val navController = rememberNavController()
+
+        Scaffold(bottomBar = {
+            BottomNavigation(
+                backgroundColor = Color.White // Background color for the navigation bar
+            ) {
+                // List of items for the bottom navigation bar
+                val items = listOf(
+                    BottomNavItem.Home,
+                    BottomNavItem.Restaurant,
+                    BottomNavItem.Wines,
+                    BottomNavItem.Orders,
+                    BottomNavItem.Profile
+                )
+
+                // Current route for the selected state
+                val currentRoute =
+                    navController.currentBackStackEntryAsState().value?.destination?.route
+
+                items.forEach { item ->
+                    BottomNavigationItem(icon = {
+                        Icon(
+                            imageVector = item.icon, contentDescription = item.title
+                        )
+                    }, label = {
+                        Text(
+                            text = item.title,
+                            fontSize = 9.sp // Adjust the font size of the label
+                        )
+                    }, selected = currentRoute == item.route, onClick = {
+                        if (currentRoute != item.route) {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }, selectedContentColor = Color.Red, // Red color for selected item
+                        unselectedContentColor = Color.Gray // Gray color for unselected items
+                    )
+                }
+            }
+        }) { innerPadding ->
+            // Navigation graph for your screens
+            NavigationGraph(
+                navController = navController, modifier = Modifier.padding(innerPadding)
+            )
         }
     }
 
@@ -657,8 +784,11 @@ class MainActivity : ComponentActivity() {
             modifier = modifier
         ) {
             composable(BottomNavItem.Home.route) {
+                val scrollState = rememberScrollState() // For vertical scrolling
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     MessageCard(Message("Palm Tree", "Teneriffe EC88 9NG"))
@@ -669,7 +799,7 @@ class MainActivity : ComponentActivity() {
                     MyViewPager()
 
                 }
-                 }
+            }
             composable(BottomNavItem.Restaurant.route) { ScreenContent("Restaurant Screen") }
             composable(BottomNavItem.Wines.route) { ScreenContent("Wines Screen") }
             composable(BottomNavItem.Orders.route) { ScreenContent("Orders Screen") }
@@ -680,18 +810,16 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun ScreenContent(text: String) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             Text(text = text, style = MaterialTheme.typography.headlineMedium)
         }
     }
 
-
     @Preview
     @Composable
     fun PreviewMessageCard() {
-        MessageCard(Message("Jenifer", "Kotlin Multiplatform"))
+        MenuOne()
     }
 }
 
