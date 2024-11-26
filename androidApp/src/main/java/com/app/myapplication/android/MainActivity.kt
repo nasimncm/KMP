@@ -1,7 +1,6 @@
 package com.app.myapplication.android
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -36,20 +34,17 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,7 +61,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -377,21 +371,29 @@ class MainActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
         var selectedIndex by remember { mutableStateOf(0) } // Track the selected index
 
+        // Observe changes in pagerState and update selectedIndex
+        LaunchedEffect(pagerState.currentPage) {
+            selectedIndex = pagerState.currentPage
+        }
+
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
             // Navigation Buttons
             Row(
-                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 pages.forEachIndexed { index, title ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clickable {
                                 selectedIndex = index
                                 scope.launch { pagerState.animateScrollToPage(index) }
-                            }) {
+                            }
+                    ) {
                         Text(
                             text = title,
                             color = if (selectedIndex == index) Color.Red else Color.Gray, // Change color on selection
@@ -409,6 +411,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+
             // Horizontal Pager
             HorizontalPager(
                 count = pages.size, // Number of pages
@@ -434,6 +437,7 @@ class MainActivity : ComponentActivity() {
             )
         }
     }
+
 
     @Composable
     fun MenuOne() {
@@ -626,101 +630,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    /*@Composable
-    fun MenuTwo() {
-        val scaffoldState = rememberScaffoldState()
-        val coroutineScope = rememberCoroutineScope()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .border(1.5.dp, Color.Gray, shape = RoundedCornerShape(8.dp)),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(all = 10.dp)
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.pizza),
-                    contentDescription = "Contact profile picture",
-                    modifier = Modifier
-                        .size(80.dp)
-                        .clip(RectangleShape)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = "Pepperoni Pizza",
-                        color = Color.DarkGray,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(
-                        text = "Pizza with pepperoni to..",
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                    Spacer(modifier = Modifier.height(5.dp))
-                    Text(
-                        text = "View Details",
-                        color = Color.Red,
-                        style = MaterialTheme.typography.titleSmall
-                    )
-                }
-
-
-            }
-
-            Column(
-                modifier = Modifier.padding(all = 10.dp),
-                horizontalAlignment = Alignment.End // Align text and button to the end
-            ) {
-                Row(modifier = Modifier.padding(all = 10.dp)) {
-                    Text(
-                        text = "GBP",
-                        color = Color.Red,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Text(
-                        text = "80",
-                        color = Color.Red,
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-
-                    // Spacer between price and button
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Add to Cart Button
-                    val context = LocalContext.current
-                    Box(contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .padding(1.dp)
-                            .background(Color.Red, shape = RoundedCornerShape(8.dp))
-                            .clickable {
-                                coroutineScope.launch {
-                                    scaffoldState.snackbarHostState.showSnackbar("Saved")
-                                }
-                            }
-                            .padding(
-                                vertical = 8.dp, horizontal = 16.dp
-                            ) // Adjust padding for the text
-                    ) {
-                        Text(
-                            text = "Add To Cart",
-                            fontSize = 8.sp,
-                            fontStyle = FontStyle.Normal,
-                            fontFamily = FontFamily.Serif,
-                            color = Color.White // White text on red background
-                        )
-                    }
-                }
-            }
-        }
-    }*/
 
     @Composable
     fun BottomNavigationBar() {
